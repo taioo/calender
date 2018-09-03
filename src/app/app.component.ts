@@ -14,17 +14,25 @@ import * as moment from 'moment';
   styleUrls: ['./app.component.css']
 
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'calender';
 
-  //today
+  // moment today
   public date = moment();
-
   public daysArr;
+  public dateForm: FormGroup;
+  public isReserved;
 
-  constructor() {
+  constructor(private fb: FormBuilder) {
+    this.initDateRange();
   }
 
+  public initDateRange() {
+    return (this.dateForm = this.fb.group({
+      dateFrom: [null, Validators.required],
+      dateTo: [null, Validators.required]
+    }));
+  }
 
   public ngOnInit() {
     this.daysArr = this.createCalendar(this.date);
@@ -32,14 +40,15 @@ export class AppComponent {
 
   public createCalendar(month) {
 
-    let firstDay = moment(month).startOf('M');
-    console.log("month days: " + month.daysInMonth())
+    const firstDay = moment(month).startOf('M');
+    console.log('month days: ' + month.daysInMonth());
 
     // creates an array of length month.daysInMonth()
-    let days = Array.apply(null, { length: month.daysInMonth() })
-      //The first argument is a callback function to apply to each element in the array, the second argument is the this value inside the callback.
+    const days = Array.apply(null, { length: month.daysInMonth() })
+      // tslint:disable-next-line:max-line-length
+      /* The first argument is a callback function to apply to each element in the array, the second argument is the this value inside the callback.*/
       .map(Number.call, Number)
-      //add days
+      // add days
       .map(n => {
         return moment(firstDay).add(n, 'd');
       });
@@ -61,7 +70,7 @@ export class AppComponent {
   }
 
 
-      //add or sub 1 month than creat calender
+  // add or sub 1 month than creat calender to show
   public nextMonth() {
     this.date.add(1, 'M');
     this.daysArr = this.createCalendar(this.date);
@@ -71,6 +80,47 @@ export class AppComponent {
     this.daysArr = this.createCalendar(this.date);
   }
 
+  public reserve() {
+    if (!this.dateForm.valid) {
+      return;
+    }
+    const dateFromMoment = this.dateForm.value.dateFrom;
+    const dateToMoment = this.dateForm.value.dateTo;
+    this.isReserved = `Reserved from ${dateFromMoment} to ${dateToMoment}`;
+
+    console.log(this.isReserved);
+  }
+
+  public isSelected(day) {
+    if (!day) {
+      return false;
+    }
+    const dateFromMoment = moment(this.dateForm.value.dateFrom, 'MM/DD/YYYY');
+    const dateToMoment = moment(this.dateForm.value.dateTo, 'MM/DD/YYYY');
+
+    if (this.dateForm.valid) {
+      return (
+        dateFromMoment.isSameOrBefore(day) && dateToMoment.isSameOrAfter(day)
+      );
+    }
+    if (this.dateForm.get('dateFrom').valid) {
+      return dateFromMoment.isSame(day);
+    }
+  }
+
+
+  public selectedDate(day) {
+    const dayFormatted = day.format('MM/DD/YYYY');
+    if (this.dateForm.valid) {
+      this.dateForm.setValue({ dateFrom: null, dateTo: null });
+      return;
+    }
+    if (!this.dateForm.get('dateFrom').value) {
+      this.dateForm.get('dateFrom').patchValue(dayFormatted);
+    } else {
+      this.dateForm.get('dateTo').patchValue(dayFormatted);
+    }
+  }
 
 
 }
