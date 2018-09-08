@@ -40,7 +40,7 @@ export class AppComponent implements OnInit {
 
   public createCalendar(month) {
 
-    const firstDay = moment(month).startOf('M');
+    const firstDay = moment(month).startOf('month');
     console.log('month days: ' + month.daysInMonth());
 
     // creates an array of length month.daysInMonth()
@@ -55,7 +55,8 @@ export class AppComponent implements OnInit {
 
 
     // add null´s to correct month start
-    for (let n = 0; n < firstDay.weekday(); n++) {
+    // n=1 to start the week at monday
+    for (let n = 1; n < firstDay.weekday(); n++) {
       days.unshift(null);
     }
 
@@ -110,7 +111,7 @@ export class AppComponent implements OnInit {
 
 
   public selectedDate(day) {
-    const dayFormatted = day.format('MM/DD/YYYY');
+    const dayFormatted = day.format('DD/MM/YYYY');
     if (this.dateForm.valid) {
       this.dateForm.setValue({ dateFrom: null, dateTo: null });
       return;
